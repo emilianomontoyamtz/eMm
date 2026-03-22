@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pendientes</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --fg: #000000;
+      --g1: #f5f5f5;
+      --g2: #ebebeb;
+      --g3: #d0d0d0;
+      --g4: #a0a0a0;
+      --g5: #686868;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 120px;
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    .header {
+      padding: 48px 24px 28px;
+      border-bottom: 1px solid var(--g2);
+    }
+    .date-day {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--g4);
+      margin-bottom: 6px;
+    }
+    .date-full {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── PROGRESS RING ──────────────────────── */
+    .progress-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 24px 32px;
+    }
+    .ring-wrap {
+      position: relative;
+      width: 200px;
+      height: 200px;
+    }
+    .ring-svg {
+      width: 200px;
+      height: 200px;
+      transform: rotate(-90deg);
+    }
+    .ring-track {
+      fill: none;
+      stroke: var(--g2);
+      stroke-width: 14;
+    }
+    .ring-fill {
+      fill: none;
+      stroke: var(--fg);
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ring-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ring-pct-wrap { line-height: 1; }
+    .ring-pct {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -3px;
+    }
+    .ring-pct-sym {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .ring-sub {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--g4);
+      margin-top: 8px;
+    }
+    .ring-fraction {
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--g5);
+    }
+
+    /* ── STATS ──────────────────────────────── */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 0 24px 36px;
+    }
+    .stat {
+      background: var(--g1);
+      border-radius: 16px;
+      padding: 20px 12px;
+      text-align: center;
+    }
+    .stat-n {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      line-height: 1;
+    }
+    .stat-l {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--g4);
+      margin-top: 8px;
+    }
+
+    /* ── CATEGORY TABS ──────────────────────── */
+    .tabs-wrap {
+      padding: 0 24px 28px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tabs { display: flex; gap: 8px; width: max-content; }
+
+    .tab {
+      padding: 9px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid var(--g3);
+      background: transparent;
+      color: var(--g5);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .tab:hover:not(.active) {
+      border-color: var(--g5);
+      color: var(--fg);
+    }
+    .tab.active { color: #fff; }
+    .tab.tab-all.active { background: var(--fg); border-color: var(--fg); }
+
+    .tab-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tab.active .tab-dot { background: rgba(255,255,255,0.6) !important; }
+
+    /* ── SECTIONS ───────────────────────────── */
+    .sections { padding: 0 24px; }
+    .cat-section {
+      margin-bottom: 36px;
+      border-left: 3px solid var(--cat-color, var(--g3));
+      padding-left: 14px;
+    }
+    .cat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .cat-name {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--cat-color, var(--g4));
+    }
+    .cat-count { font-size: 12px; color: var(--g4); }
+    .cat-bar-wrap {
+      height: 3px;
+      background: var(--g2);
+      border-radius: 2px;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+    .cat-bar {
+      height: 100%;
+      background: var(--cat-color, var(--fg));
+      border-radius: 2px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── TODO ITEMS ─────────────────────────── */
+    .todo-list { list-style: none; }
+    .todo-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--g1);
+      animation: itemIn 0.2s ease-out both;
+    }
+    .todo-item:last-child { border-bottom: none; }
+
+    .check-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--g3);
+      background: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin-top: 2px;
+    }
+    .check-btn:hover {
+      border-color: var(--cat-color, var(--fg));
+      background: var(--g1);
+    }
+    .check-btn.done {
+      background: var(--cat-color, var(--fg));
+      border-color: var(--cat-color, var(--fg));
+    }
+    .checkmark {
+      width: 10px;
+      height: 7px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-right: none;
+      transform: rotate(-45deg) translateY(-1px);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .check-btn.done .checkmark { opacity: 1; }
+
+    .todo-body { flex: 1; min-width: 0; }
+    .todo-text {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--fg);
+      transition: color 0.2s;
+      word-break: break-word;
+    }
+    .todo-text.done { color: var(--g4); text-decoration: line-through; }
+
+    .todo-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: var(--g1);
+      color: var(--g5);
+      border: 1px solid var(--g2);
+    }
+    .tag-day {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 100px;
+      border: 1.5px solid var(--cat-color, var(--g3));
+      color: var(--cat-color, var(--g5));
+      background: transparent;
+      letter-spacing: 0.05em;
+    }
+    .streak {
+      font-size: 11px;
+      color: var(--g4);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .del-btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--g3);
+      font-size: 20px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: all 0.15s;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .todo-item:hover .del-btn { opacity: 1; }
+    .del-btn:hover { background: var(--g1); color: var(--fg); }
+
+    /* ── EMPTY STATE ────────────────────────── */
+    .empty-state {
+      padding: 64px 24px;
+      text-align: center;
+    }
+    .empty-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+      color: var(--g3);
+      line-height: 1;
+    }
+    .empty-msg { font-size: 14px; color: var(--g4); line-height: 1.6; }
+
+    /* ── ALL DONE ───────────────────────────── */
+    .all-done {
+      text-align: center;
+      padding: 28px 24px 8px;
+      font-size: 13px;
+      color: var(--g5);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── FAB ────────────────────────────────── */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 100px;
+      padding: 17px 32px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.22);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+      font-family: inherit;
+      z-index: 50;
+    }
+    .fab:hover {
+      transform: translateX(-50%) translateY(-3px);
+      box-shadow: 0 10px 36px rgba(0,0,0,0.28);
+    }
+    .fab:active { transform: translateX(-50%) scale(0.96); }
+
+    /* ── MODAL ──────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg);
+      border-radius: 28px 28px 0 0;
+      padding: 24px 24px 52px;
+      width: 100%;
+      max-width: 480px;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 92dvh;
+      overflow-y: auto;
+    }
+    .overlay.show .modal { transform: translateY(0); }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--g3);
+      border-radius: 2px;
+      margin: 0 auto 24px;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    .field { margin-bottom: 22px; }
+    .field-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--g4);
+      display: block;
+      margin-bottom: 10px;
+    }
+    .field-hint {
+      font-size: 11px;
+      color: var(--g4);
+      margin-top: 8px;
+    }
+    .text-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--g2);
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+    .text-input:focus { border-color: var(--fg); }
+
+    /* Category pills in modal */
+    .cat-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .cat-pill {
+      padding: 8px 14px;
+      border-radius: 100px;
+      border: 1.5px solid var(--g2);
+      background: transparent;
+      color: var(--g5);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .cat-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cat-pill.sel { color: #fff; }
+
+    /* New category row */
+    .new-cat-section { margin-top: 10px; }
+    .new-cat-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .new-cat-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid var(--g2);
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--fg);
+      outline: none;
+    }
+    .new-cat-row input:focus { border-color: var(--g4); }
+    .new-cat-row button {
+      padding: 10px 16px;
+      border: 1.5px solid var(--g2);
+      border-radius: 10px;
+      background: var(--g1);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--fg);
+      transition: background 0.15s;
+    }
+    .new-cat-row button:hover { background: var(--g2); }
+
+    /* Color swatches */
+    .color-swatches {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .swatch {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2.5px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.sel { border-color: var(--fg); transform: scale(1.1); }
+
+    /* Day of week picker */
+    .day-pills {
+      display: flex;
+      gap: 6px;
+    }
+    .day-pill {
+      flex: 1;
+      padding: 10px 4px;
+      border-radius: 10px;
+      border: 1.5px solid var(--g2);
+      background: transparent;
+      color: var(--g5);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .day-pill:hover:not(.sel) { border-color: var(--g4); color: var(--fg); }
+    .day-pill.sel { background: var(--fg); border-color: var(--fg); color: #fff; }
+    .day-pill.today:not(.sel) {
+      border-color: var(--g4);
+      color: var(--fg);
+      font-weight: 800;
+    }
+
+    /* Toggle */
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-top: 1px solid var(--g1);
+    }
+    .toggle-info { flex: 1; }
+    .toggle-name { font-size: 15px; font-weight: 500; }
+    .toggle-desc { font-size: 12px; color: var(--g4); margin-top: 3px; }
+    .toggle {
+      width: 46px;
+      height: 28px;
+      background: var(--g3);
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--fg); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toggle.on::after { transform: translateX(18px); }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 17px;
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.02em;
+    }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* ── ANIMATIONS ─────────────────────────── */
+    @keyframes itemIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes checkPop {
+      0%   { transform: scale(1); }
+      45%  { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .check-pop { animation: checkPop 0.28s ease-out; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="date-day" id="date-day"></div>
+  <div class="date-full" id="date-full"></div>
+</div>
+
+<!-- PROGRESS RING -->
+<div class="progress-hero">
+  <div class="ring-wrap">
+    <svg class="ring-svg" viewBox="0 0 200 200">
+      <circle class="ring-track" cx="100" cy="100" r="86"/>
+      <circle class="ring-fill" id="ring-fill" cx="100" cy="100" r="86"
+        stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
+    </svg>
+    <div class="ring-inner">
+      <div class="ring-pct-wrap">
+        <span class="ring-pct" id="ring-pct">0</span><span class="ring-pct-sym">%</span>
+      </div>
+      <div class="ring-sub">completado</div>
+    </div>
+  </div>
+  <div class="ring-fraction" id="ring-fraction">0 de 0 tareas</div>
+</div>
+
+<!-- STATS -->
+<div class="stats" id="stats"></div>
+
+<!-- CATEGORY TABS -->
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<!-- SECTIONS -->
+<div class="sections" id="sections"></div>
+
+<!-- FAB -->
+<button class="fab" id="fab-btn">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+  Agregar tarea
+</button>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nueva tarea</div>
+
+    <div class="field">
+      <label class="field-label">¿Qué necesitas hacer?</label>
+      <input type="text" class="text-input" id="todo-input"
+        placeholder="Describe tu tarea..." autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label class="field-label">Categoría</label>
+      <div class="cat-pills" id="cat-pills"></div>
+      <div class="new-cat-section">
+        <div class="new-cat-row">
+          <input type="text" id="new-cat-input" placeholder="Nueva categoría...">
+          <button id="new-cat-btn">+</button>
+        </div>
+        <div class="color-swatches" id="color-swatches"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Días de la semana</label>
+      <div class="day-pills" id="day-pills"></div>
+      <div class="field-hint">Sin selección = aparece todos los días</div>
+    </div>
+
+    <div class="field">
+      <div class="toggle-field">
+        <div class="toggle-info">
+          <div class="toggle-name">Tarea diaria</div>
+          <div class="toggle-desc">Se reinicia automáticamente cada día</div>
+        </div>
+        <button class="toggle" id="recurring-btn"></button>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn">Agregar tarea</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTES ──────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'pendientes_v2';
+const CIRC = 2 * Math.PI * 86; // ≈ 540.35
+
+const PALETTE = [
+  '#e74c3c', // rojo
+  '#e67e22', // naranja
+  '#f1c40f', // amarillo
+  '#27ae60', // verde
+  '#16a085', // teal
+  '#2980b9', // azul
+  '#8e44ad', // morado
+  '#d63031', // rosa
+];
+
+// Días en orden lunes→domingo (value = JS getDay())
+const WEEK = [
+  { label: 'Lu', value: 1 },
+  { label: 'Ma', value: 2 },
+  { label: 'Mi', value: 3 },
+  { label: 'Ju', value: 4 },
+  { label: 'Vi', value: 5 },
+  { label: 'Sá', value: 6 },
+  { label: 'Do', value: 0 },
+];
+
+// ── ESTADO ──────────────────────────────────────────────────────────────────
+let state = {
+  todos: [],
+  // categories: [{ name, color }]
+  categories: [
+    { name: 'Personal', color: '#8e44ad' },
+    { name: 'Trabajo',  color: '#2980b9' },
+    { name: 'Salud',    color: '#27ae60' },
+  ],
+  activeFilter: 'all',
+  lastResetDate: null,
+};
+
+let form = {
+  category: 'Personal',
+  recurring: false,
+  days: [],          // [] = todos los días, o [1,3,5] = lunes/miércoles/viernes
+  newCatColor: PALETTE[3],
+};
+
+// ── PERSISTENCIA ────────────────────────────────────────────────────────────
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      state.todos         = s.todos         || [];
+      state.lastResetDate = s.lastResetDate || null;
+
+      // Migrar categorías de formato string al nuevo formato objeto
+      if (s.categories && s.categories.length) {
+        state.categories = s.categories.map((c, i) =>
+          typeof c === 'string'
+            ? { name: c, color: PALETTE[i % PALETTE.length] }
+            : c
+        );
+      }
+    }
+  } catch(e) {}
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    todos:         state.todos,
+    categories:    state.categories,
+    lastResetDate: state.lastResetDate,
+  }));
+}
+
+// ── FECHAS ──────────────────────────────────────────────────────────────────
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function todayDayIdx() { return new Date().getDay(); } // 0=Dom ... 6=Sáb
+
+// ── VISIBILIDAD POR DÍA ──────────────────────────────────────────────────────
+function isTodoVisible(t) {
+  if (!t.days || t.days.length === 0) return true;
+  return t.days.includes(todayDayIdx());
+}
+
+// ── REINICIO DIARIO ─────────────────────────────────────────────────────────
+function dailyReset() {
+  const today = todayStr();
+  if (state.lastResetDate === today) return;
+
+  state.todos = state.todos.map(t => {
+    if (!t.recurring) return t;
+    let streak = t.streak || 0;
+    if (t.completed && t.lastCompletedDate === state.lastResetDate) {
+      streak += 1;
+    } else if (state.lastResetDate) {
+      streak = 0;
+    }
+    return { ...t, completed: false, streak };
+  });
+
+  state.lastResetDate = today;
+  save();
+}
+
+// ── ID ──────────────────────────────────────────────────────────────────────
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function getCat(name) {
+  return state.categories.find(c => c.name === name)
+    || { name, color: '#000000' };
+}
+
+function nextPaletteColor() {
+  const used = new Set(state.categories.map(c => c.color));
+  return PALETTE.find(c => !used.has(c)) || PALETTE[state.categories.length % PALETTE.length];
+}
+
+// ── ACCIONES ────────────────────────────────────────────────────────────────
+function toggleTodo(id) {
+  state.todos = state.todos.map(t => {
+    if (t.id !== id) return t;
+    const completed = !t.completed;
+    return { ...t, completed, lastCompletedDate: completed ? todayStr() : t.lastCompletedDate };
+  });
+  save();
+  render();
+}
+
+function deleteTodo(id) {
+  state.todos = state.todos.filter(t => t.id !== id);
+  save();
+  render();
+}
+
+function setFilter(cat) {
+  state.activeFilter = cat;
+  render();
+}
+
+function addNewCat() {
+  const input = document.getElementById('new-cat-input');
+  const val = input.value.trim();
+  if (!val) return;
+  if (!state.categories.find(c => c.name === val)) {
+    state.categories.push({ name: val, color: form.newCatColor });
+    save();
+  }
+  form.category = val;
+  form.newCatColor = nextPaletteColor();
+  input.value = '';
+  renderCatPills();
+  renderColorSwatches();
+}
+
+function submitTodo() {
+  const input = document.getElementById('todo-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  state.todos.push({
+    id:                uid(),
+    text,
+    category:          form.category,
+    recurring:         form.recurring,
+    days:              [...form.days],
+    completed:         false,
+    streak:            0,
+    lastCompletedDate: null,
+    createdAt:         Date.now(),
+  });
+
+  save();
+  closeModal();
+  render();
+}
+
+// ── MODAL ───────────────────────────────────────────────────────────────────
+function openModal() {
+  const firstCat = state.categories[0];
+  form = {
+    category:    firstCat ? firstCat.name : 'Personal',
+    recurring:   false,
+    days:        [],
+    newCatColor: nextPaletteColor(),
+  };
+  document.getElementById('todo-input').value = '';
+  document.getElementById('recurring-btn').classList.remove('on');
+  renderCatPills();
+  renderColorSwatches();
+  renderDayPills();
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(() => document.getElementById('todo-input').focus(), 380);
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function renderCatPills() {
+  const container = document.getElementById('cat-pills');
+  container.innerHTML = state.categories.map((cat, i) => {
+    const sel = form.category === cat.name;
+    const style = sel
+      ? `background:${cat.color};border-color:${cat.color}`
+      : `border-color:${cat.color}33`;
+    return `<button class="cat-pill ${sel ? 'sel' : ''}" style="${style}" data-idx="${i}">
+      <span class="cat-pill-dot" style="background:${cat.color}"></span>
+      ${esc(cat.name)}
+    </button>`;
+  }).join('');
+
+  container.querySelectorAll('.cat-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      form.category = state.categories[+btn.dataset.idx].name;
+      renderCatPills();
+    });
+  });
+}
+
+function renderColorSwatches() {
+  const container = document.getElementById('color-swatches');
+  container.innerHTML = PALETTE.map(color => `
+    <div class="swatch ${form.newCatColor === color ? 'sel' : ''}"
+      style="background:${color}" data-color="${color}"></div>
+  `).join('');
+
+  container.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      form.newCatColor = sw.dataset.color;
+      renderColorSwatches();
+    });
+  });
+}
+
+function renderDayPills() {
+  const today = todayDayIdx();
+  const container = document.getElementById('day-pills');
+  container.innerHTML = WEEK.map(d => {
+    const sel = form.days.includes(d.value);
+    const isToday = d.value === today;
+    return `<button class="day-pill ${sel ? 'sel' : ''} ${isToday && !sel ? 'today' : ''}"
+      data-value="${d.value}">${d.label}</button>`;
+  }).join('');
+
+  container.querySelectorAll('.day-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = +btn.dataset.value;
+      if (form.days.includes(val)) {
+        form.days = form.days.filter(v => v !== val);
+      } else {
+        form.days = [...form.days, val];
+      }
+      renderDayPills();
+    });
+  });
+}
+
+// ── RENDER ──────────────────────────────────────────────────────────────────
+function esc(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function render() {
+  renderDate();
+  renderProgress();
+  renderStats();
+  renderTabs();
+  renderSections();
+}
+
+function renderDate() {
+  const now = new Date();
+  const days   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+                  'septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('date-day').textContent  = days[now.getDay()];
+  document.getElementById('date-full').textContent =
+    `${now.getDate()} de ${months[now.getMonth()]} · ${now.getFullYear()}`;
+}
+
+function renderProgress() {
+  const visible = state.todos.filter(isTodoVisible);
+  const total = visible.length;
+  const done  = visible.filter(t => t.completed).length;
+  const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
+
+  document.getElementById('ring-pct').textContent      = pct;
+  document.getElementById('ring-fraction').textContent =
+    `${done} de ${total} tarea${total !== 1 ? 's' : ''} hoy`;
+
+  const offset = CIRC - (pct / 100) * CIRC;
+  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+}
+
+function renderStats() {
+  const visible   = state.todos.filter(isTodoVisible);
+  const done      = visible.filter(t => t.completed).length;
+  const pending   = visible.length - done;
+  const maxStreak = state.todos.reduce((m, t) => Math.max(m, t.streak || 0), 0);
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat">
+      <div class="stat-n">${done}</div>
+      <div class="stat-l">Completadas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">${pending}</div>
+      <div class="stat-l">Pendientes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">${maxStreak}</div>
+      <div class="stat-l">Racha máx.</div>
+    </div>
+  `;
+}
+
+function renderTabs() {
+  const { todos, categories, activeFilter } = state;
+  const visible  = todos.filter(isTodoVisible);
+  const allDone  = visible.filter(t => t.completed).length;
+  const allTotal = visible.length;
+
+  let html = `<button class="tab tab-all ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">
+    Todas · ${allDone}/${allTotal}
+  </button>`;
+
+  categories.forEach((cat, i) => {
+    const catTodos = visible.filter(t => t.category === cat.name);
+    if (catTodos.length === 0) return;
+    const catDone = catTodos.filter(t => t.completed).length;
+    const isActive = activeFilter === cat.name;
+    const style = isActive
+      ? `background:${cat.color};border-color:${cat.color}`
+      : `border-color:${cat.color}55`;
+    html += `<button class="tab ${isActive ? 'active' : ''}" style="${style}" data-cat-idx="${i}">
+      <span class="tab-dot" style="background:${cat.color}"></span>
+      ${esc(cat.name)} · ${catDone}/${catTodos.length}
+    </button>`;
+  });
+
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = html;
+
+  tabsEl.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.filter === 'all') {
+        setFilter('all');
+      } else {
+        setFilter(state.categories[+btn.dataset.catIdx].name);
+      }
+    });
+  });
+}
+
+function renderSections() {
+  const { todos, categories, activeFilter } = state;
+  const container = document.getElementById('sections');
+  const visible = todos.filter(isTodoVisible);
+
+  const catsToShow = categories.filter(cat => {
+    if (activeFilter !== 'all' && cat.name !== activeFilter) return false;
+    return visible.some(t => t.category === cat.name);
+  });
+
+  if (catsToShow.length === 0) {
+    const msg = visible.length === 0 && todos.length > 0
+      ? 'No hay tareas para hoy.<br>Revisa mañana o cambia los días asignados.'
+      : 'No hay tareas todavía.<br>¡Agrega tu primera tarea!';
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">○</div>
+        <div class="empty-msg">${msg}</div>
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  catsToShow.forEach(cat => {
+    const catTodos = visible.filter(t => t.category === cat.name);
+    const done = catTodos.filter(t => t.completed).length;
+    const pct  = Math.round((done / catTodos.length) * 100);
+
+    html += `
+      <div class="cat-section" style="--cat-color:${cat.color}">
+        <div class="cat-header">
+          <span class="cat-name">${esc(cat.name)}</span>
+          <span class="cat-count">${done} / ${catTodos.length}</span>
+        </div>
+        <div class="cat-bar-wrap">
+          <div class="cat-bar" style="width:${pct}%"></div>
+        </div>
+        <ul class="todo-list">
+          ${catTodos.map(t => todoItemHTML(t, cat.color)).join('')}
+        </ul>
+      </div>`;
+  });
+
+  const allDone = visible.length > 0 && visible.every(t => t.completed);
+  if (allDone) {
+    html += `<div class="all-done">✓ &nbsp;¡Todo completado por hoy!</div>`;
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('.check-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.add('check-pop');
+      btn.addEventListener('animationend', () => btn.classList.remove('check-pop'), { once: true });
+      toggleTodo(btn.dataset.id);
+    });
+  });
+  container.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteTodo(btn.dataset.id));
+  });
+}
+
+function todoItemHTML(t, color) {
+  const streakBadge = t.recurring && (t.streak || 0) > 0
+    ? `<span class="streak">◆ ${t.streak} día${t.streak !== 1 ? 's' : ''}</span>`
+    : '';
+  const recurTag = t.recurring ? `<span class="tag">↻ diaria</span>` : '';
+
+  const dayTags = (t.days && t.days.length > 0)
+    ? t.days
+        .map(v => WEEK.find(d => d.value === v))
+        .filter(Boolean)
+        .sort((a, b) => {
+          // sort in WEEK order
+          const ai = WEEK.findIndex(d => d.value === a.value);
+          const bi = WEEK.findIndex(d => d.value === b.value);
+          return ai - bi;
+        })
+        .map(d => `<span class="tag-day">${d.label}</span>`)
+        .join('')
+    : '';
+
+  return `
+    <li class="todo-item" style="--cat-color:${color}">
+      <button class="check-btn ${t.completed ? 'done' : ''}" data-id="${t.id}">
+        <div class="checkmark"></div>
+      </button>
+      <div class="todo-body">
+        <div class="todo-text ${t.completed ? 'done' : ''}">${esc(t.text)}</div>
+        <div class="todo-tags">${recurTag}${dayTags}${streakBadge}</div>
+      </div>
+      <button class="del-btn" data-id="${t.id}" title="Eliminar">×</button>
+    </li>`;
+}
+
+// ── EVENTOS ESTÁTICOS ────────────────────────────────────────────────────────
+document.getElementById('fab-btn').addEventListener('click', openModal);
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.getElementById('recurring-btn').addEventListener('click', function() {
+  form.recurring = !form.recurring;
+  this.classList.toggle('on', form.recurring);
+});
+
+document.getElementById('submit-btn').addEventListener('click', submitTodo);
+document.getElementById('new-cat-btn').addEventListener('click', addNewCat);
+
+document.getElementById('todo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitTodo();
+});
+document.getElementById('new-cat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addNewCat();
+});
+
+// ── INICIO ──────────────────────────────────────────────────────────────────
+load();
+dailyReset();
+render();
+</script>
+</body>
+</html>
