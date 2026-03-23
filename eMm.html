@@ -53,13 +53,12 @@
       padding: 40px 24px 32px;
     }
     .jar-svg {
-      width: 140px;
-      height: 175px;
+      width: 180px;
+      height: 200px;
       overflow: visible;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.10));
+      filter: drop-shadow(0 4px 14px rgba(0,0,0,0.10));
     }
     #honey-group {
-      transform: translateY(160px);
       transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
     }
     @keyframes honey-wave {
@@ -73,6 +72,33 @@
       margin-top: 16px;
       font-size: 14px;
       color: var(--g5);
+    }
+
+    /* ── OTROS DÍAS ────────────────────────── */
+    .other-days-section {
+      padding: 0 24px;
+      margin-top: 28px;
+    }
+    .other-days-header {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--g4);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--g2);
+      margin-bottom: 8px;
+    }
+    .other-days-list { list-style: none; }
+    .other-days-list .todo-item {
+      opacity: 0.55;
+    }
+    .other-days-list .todo-text {
+      color: var(--g5);
+    }
+    .other-days-list .check-btn {
+      border-color: var(--g3);
+      pointer-events: none;
     }
 
     /* ── STATS ──────────────────────────────── */
@@ -592,48 +618,53 @@
 
 <!-- HONEY JAR -->
 <div class="progress-hero">
-  <svg class="jar-svg" viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
+  <svg class="jar-svg" viewBox="0 0 160 190" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <!-- Clip al interior del tarro -->
+      <!-- Clip circular del cuerpo del tarro -->
       <clipPath id="jar-clip">
-        <path d="M26,24 L94,24 L101,152 Q101,162 91,162 L29,162 Q19,162 19,152 Z"/>
+        <ellipse cx="80" cy="115" rx="62" ry="60"/>
       </clipPath>
     </defs>
 
     <!-- Fondo claro del tarro (vacío) -->
-    <path d="M26,24 L94,24 L101,152 Q101,162 91,162 L29,162 Q19,162 19,152 Z" fill="#fef9ec"/>
+    <ellipse cx="80" cy="115" rx="62" ry="60" fill="#fef9ec"/>
 
     <!-- Miel que sube (group animado en Y) -->
     <g id="honey-group" clip-path="url(#jar-clip)">
       <!-- Ola de miel -->
       <g class="honey-wave-anim">
         <path fill="#fbbf24"
-          d="M-60,0 Q-45,-14 -30,0 Q-15,14 0,0 Q15,-14 30,0 Q45,14 60,0 Q75,-14 90,0 Q105,14 120,0 Q135,-14 150,0 Q165,14 180,0 L180,18 L-60,18 Z"/>
+          d="M-60,0 Q-45,-10 -30,0 Q-15,10 0,0 Q15,-10 30,0 Q45,10 60,0 Q75,-10 90,0 Q105,10 120,0 Q135,-10 150,0 Q165,10 180,0 Q195,-10 210,0 Q225,10 240,0 L240,14 L-60,14 Z"/>
       </g>
       <!-- Relleno sólido debajo de la ola -->
-      <rect x="-10" y="10" width="140" height="200" fill="#fbbf24"/>
+      <rect x="-10" y="8" width="240" height="200" fill="#fbbf24"/>
       <!-- Brillo interior de la miel -->
-      <rect x="-10" y="10" width="140" height="200" fill="#fde68a" opacity="0.3"/>
+      <rect x="-10" y="8" width="240" height="200" fill="#fde68a" opacity="0.25"/>
     </g>
 
-    <!-- Contorno del cuerpo del tarro (encima de la miel) -->
-    <path d="M26,24 L94,24 L101,152 Q101,162 91,162 L29,162 Q19,162 19,152 Z"
-          fill="none" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- Contorno del cuerpo del tarro -->
+    <ellipse cx="80" cy="115" rx="62" ry="60"
+             fill="none" stroke="#b45309" stroke-width="2.5"/>
+
+    <!-- Cuello del tarro (conecta cuerpo con tapa) -->
+    <rect x="56" y="48" width="48" height="14" rx="2" fill="#fef9ec" stroke="#b45309" stroke-width="2"/>
 
     <!-- Tapa -->
-    <rect x="14" y="4" width="92" height="24" rx="8" fill="#d97706"/>
-    <rect x="18" y="7" width="84" height="18" rx="6" fill="#f59e0b"/>
-    <rect x="20" y="8" width="80" height="9" rx="5" fill="#fcd34d" opacity="0.55"/>
+    <rect x="48" y="30" width="64" height="22" rx="8" fill="#d97706"/>
+    <rect x="52" y="33" width="56" height="16" rx="6" fill="#f59e0b"/>
+    <rect x="54" y="34" width="52" height="8" rx="4" fill="#fcd34d" opacity="0.55"/>
 
     <!-- Brillo en el vidrio del tarro -->
-    <path d="M32,32 Q30,95 33,148" stroke="rgba(255,255,255,0.32)" stroke-width="6"
+    <path d="M42,80 Q38,115 42,155" stroke="rgba(255,255,255,0.30)" stroke-width="6"
+          stroke-linecap="round" fill="none"/>
+    <path d="M50,75 Q48,95 50,108" stroke="rgba(255,255,255,0.18)" stroke-width="3"
           stroke-linecap="round" fill="none"/>
 
     <!-- Porcentaje (encima de todo) -->
-    <text id="jar-pct" x="60" y="100" text-anchor="middle" dominant-baseline="middle"
+    <text id="jar-pct" x="80" y="120" text-anchor="middle" dominant-baseline="middle"
           font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-          font-size="24" font-weight="900"
-          stroke="rgba(255,255,255,0.7)" stroke-width="4" paint-order="stroke"
+          font-size="28" font-weight="900"
+          stroke="rgba(255,255,255,0.75)" stroke-width="4" paint-order="stroke"
           fill="#78350f">0%</text>
   </svg>
   <div class="jar-fraction" id="jar-fraction">0 de 0 tareas hoy</div>
@@ -649,6 +680,9 @@
 
 <!-- SECTIONS -->
 <div class="sections" id="sections"></div>
+
+<!-- OTROS DÍAS -->
+<div class="other-days-section" id="other-days"></div>
 
 <!-- FAB -->
 <button class="fab" id="fab-btn">
@@ -980,6 +1014,7 @@ function render() {
   renderStats();
   renderTabs();
   renderSections();
+  renderOtherDays();
 }
 
 function renderDate() {
@@ -998,8 +1033,9 @@ function renderProgress() {
   const done  = visible.filter(t => t.completed).length;
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
 
-  // 160 = tarro vacío (group abajo), 24 = lleno (group arriba)
-  const fillY = 160 - (160 - 24) * (pct / 100);
+  // Elipse: top=55, bottom=175. fillY baja = menos miel, sube = más miel
+  const top = 55, bottom = 175;
+  const fillY = bottom - (bottom - top) * (pct / 100);
   document.getElementById('honey-group').style.transform = `translateY(${fillY}px)`;
   document.getElementById('jar-pct').textContent = pct + '%';
   document.getElementById('jar-fraction').textContent =
@@ -1077,8 +1113,9 @@ function renderSections() {
   });
 
   if (catsToShow.length === 0) {
-    const msg = visible.length === 0 && todos.length > 0
-      ? 'No hay tareas para hoy.<br>Revisa mañana o cambia los días asignados.'
+    const hasTodosOtherDays = todos.some(t => !isTodoVisible(t));
+    const msg = hasTodosOtherDays
+      ? 'No hay tareas para hoy.<br>Revisa las de otros días abajo.'
       : 'No hay tareas todavía.<br>¡Agrega tu primera tarea!';
     container.innerHTML = `
       <div class="empty-state">
@@ -1123,6 +1160,55 @@ function renderSections() {
       toggleTodo(btn.dataset.id);
     });
   });
+  container.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteTodo(btn.dataset.id));
+  });
+}
+
+function renderOtherDays() {
+  const container = document.getElementById('other-days');
+  const { todos, categories } = state;
+  const otherTodos = todos.filter(t => !isTodoVisible(t));
+
+  if (otherTodos.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  // Agrupar por día
+  const dayGroups = {};
+  otherTodos.forEach(t => {
+    (t.days || []).forEach(d => {
+      if (d === todayDayIdx()) return; // skip today
+      if (!dayGroups[d]) dayGroups[d] = [];
+      if (!dayGroups[d].find(x => x.id === t.id)) dayGroups[d].push(t);
+    });
+  });
+
+  const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  // Ordenar días empezando desde mañana
+  const today = todayDayIdx();
+  const sortedDays = Object.keys(dayGroups)
+    .map(Number)
+    .sort((a, b) => ((a - today - 1 + 7) % 7) - ((b - today - 1 + 7) % 7));
+
+  let html = '<div class="other-days-header">Otros días</div>';
+  sortedDays.forEach(dayIdx => {
+    const dayTodos = dayGroups[dayIdx];
+    html += `<div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--g4);margin-bottom:6px;letter-spacing:0.08em">${dayNames[dayIdx]}</div>
+      <ul class="other-days-list">
+        ${dayTodos.map(t => {
+          const cat = getCat(t.category);
+          return todoItemHTML(t, cat.color);
+        }).join('')}
+      </ul>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Los botones de eliminar sí funcionan en "otros días"
   container.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', () => deleteTodo(btn.dataset.id));
   });
