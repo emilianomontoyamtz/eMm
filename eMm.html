@@ -45,63 +45,32 @@
       letter-spacing: -0.5px;
     }
 
-    /* ── PROGRESS RING ──────────────────────── */
+    /* ── HONEY JAR ───────────────────────────── */
     .progress-hero {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 40px 24px 32px;
     }
-    .ring-wrap {
-      position: relative;
-      width: 200px;
-      height: 200px;
+    .jar-svg {
+      width: 140px;
+      height: 175px;
+      overflow: visible;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.10));
     }
-    .ring-svg {
-      width: 200px;
-      height: 200px;
-      transform: rotate(-90deg);
+    #honey-group {
+      transform: translateY(160px);
+      transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .ring-track {
-      fill: none;
-      stroke: var(--g2);
-      stroke-width: 14;
+    @keyframes honey-wave {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-60px); }
     }
-    .ring-fill {
-      fill: none;
-      stroke: var(--fg);
-      stroke-width: 14;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    .honey-wave-anim {
+      animation: honey-wave 2.8s linear infinite;
     }
-    .ring-inner {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .ring-pct-wrap { line-height: 1; }
-    .ring-pct {
-      font-size: 48px;
-      font-weight: 900;
-      letter-spacing: -3px;
-    }
-    .ring-pct-sym {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0;
-    }
-    .ring-sub {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--g4);
-      margin-top: 8px;
-    }
-    .ring-fraction {
-      margin-top: 20px;
+    .jar-fraction {
+      margin-top: 16px;
       font-size: 14px;
       color: var(--g5);
     }
@@ -621,22 +590,53 @@
   <div class="date-full" id="date-full"></div>
 </div>
 
-<!-- PROGRESS RING -->
+<!-- HONEY JAR -->
 <div class="progress-hero">
-  <div class="ring-wrap">
-    <svg class="ring-svg" viewBox="0 0 200 200">
-      <circle class="ring-track" cx="100" cy="100" r="86"/>
-      <circle class="ring-fill" id="ring-fill" cx="100" cy="100" r="86"
-        stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
-    </svg>
-    <div class="ring-inner">
-      <div class="ring-pct-wrap">
-        <span class="ring-pct" id="ring-pct">0</span><span class="ring-pct-sym">%</span>
-      </div>
-      <div class="ring-sub">completado</div>
-    </div>
-  </div>
-  <div class="ring-fraction" id="ring-fraction">0 de 0 tareas</div>
+  <svg class="jar-svg" viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Clip al interior del tarro -->
+      <clipPath id="jar-clip">
+        <path d="M26,24 L94,24 L101,152 Q101,162 91,162 L29,162 Q19,162 19,152 Z"/>
+      </clipPath>
+    </defs>
+
+    <!-- Fondo claro del tarro (vacío) -->
+    <path d="M26,24 L94,24 L101,152 Q101,162 91,162 L29,162 Q19,162 19,152 Z" fill="#fef9ec"/>
+
+    <!-- Miel que sube (group animado en Y) -->
+    <g id="honey-group" clip-path="url(#jar-clip)">
+      <!-- Ola de miel -->
+      <g class="honey-wave-anim">
+        <path fill="#fbbf24"
+          d="M-60,0 Q-45,-14 -30,0 Q-15,14 0,0 Q15,-14 30,0 Q45,14 60,0 Q75,-14 90,0 Q105,14 120,0 Q135,-14 150,0 Q165,14 180,0 L180,18 L-60,18 Z"/>
+      </g>
+      <!-- Relleno sólido debajo de la ola -->
+      <rect x="-10" y="10" width="140" height="200" fill="#fbbf24"/>
+      <!-- Brillo interior de la miel -->
+      <rect x="-10" y="10" width="140" height="200" fill="#fde68a" opacity="0.3"/>
+    </g>
+
+    <!-- Contorno del cuerpo del tarro (encima de la miel) -->
+    <path d="M26,24 L94,24 L101,152 Q101,162 91,162 L29,162 Q19,162 19,152 Z"
+          fill="none" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Tapa -->
+    <rect x="14" y="4" width="92" height="24" rx="8" fill="#d97706"/>
+    <rect x="18" y="7" width="84" height="18" rx="6" fill="#f59e0b"/>
+    <rect x="20" y="8" width="80" height="9" rx="5" fill="#fcd34d" opacity="0.55"/>
+
+    <!-- Brillo en el vidrio del tarro -->
+    <path d="M32,32 Q30,95 33,148" stroke="rgba(255,255,255,0.32)" stroke-width="6"
+          stroke-linecap="round" fill="none"/>
+
+    <!-- Porcentaje (encima de todo) -->
+    <text id="jar-pct" x="60" y="100" text-anchor="middle" dominant-baseline="middle"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          font-size="24" font-weight="900"
+          stroke="rgba(255,255,255,0.7)" stroke-width="4" paint-order="stroke"
+          fill="#78350f">0%</text>
+  </svg>
+  <div class="jar-fraction" id="jar-fraction">0 de 0 tareas hoy</div>
 </div>
 
 <!-- STATS -->
@@ -705,7 +705,6 @@
 <script>
 // ── CONSTANTES ──────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'pendientes_v2';
-const CIRC = 2 * Math.PI * 86; // ≈ 540.35
 
 const PALETTE = [
   '#e74c3c', // rojo
@@ -883,6 +882,7 @@ function submitTodo() {
   });
 
   save();
+  state.activeFilter = 'all';
   closeModal();
   render();
 }
@@ -998,12 +998,12 @@ function renderProgress() {
   const done  = visible.filter(t => t.completed).length;
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
 
-  document.getElementById('ring-pct').textContent      = pct;
-  document.getElementById('ring-fraction').textContent =
+  // 160 = tarro vacío (group abajo), 24 = lleno (group arriba)
+  const fillY = 160 - (160 - 24) * (pct / 100);
+  document.getElementById('honey-group').style.transform = `translateY(${fillY}px)`;
+  document.getElementById('jar-pct').textContent = pct + '%';
+  document.getElementById('jar-fraction').textContent =
     `${done} de ${total} tarea${total !== 1 ? 's' : ''} hoy`;
-
-  const offset = CIRC - (pct / 100) * CIRC;
-  document.getElementById('ring-fill').style.strokeDashoffset = offset;
 }
 
 function renderStats() {
