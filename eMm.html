@@ -61,9 +61,6 @@
     #honey-group {
       transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    #honey-group.empty {
-      transition: none;
-    }
     @keyframes honey-wave {
       from { transform: translateX(0); }
       to   { transform: translateX(-60px); }
@@ -1036,19 +1033,11 @@ function renderProgress() {
   const done  = visible.filter(t => t.completed).length;
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
 
-  const honeyEl = document.getElementById('honey-group');
-
-  if (pct === 0) {
-    // Completamente fuera del tarro: invisible
-    honeyEl.classList.add('empty');
-    honeyEl.style.transform = 'translateY(200px)';
-  } else {
-    honeyEl.classList.remove('empty');
-    // top=60 (lleno), bottom=170 (casi vacío, un poquito de miel)
-    const top = 60, bottom = 170;
-    const fillY = bottom - (bottom - top) * (pct / 100);
-    honeyEl.style.transform = `translateY(${fillY}px)`;
-  }
+  // La miel siempre está: nivel bajo (pct=0) hasta lleno (pct=100)
+  // bottom=168 → poquita miel en el fondo, top=58 → tarro lleno
+  const bottom = 168, top = 58;
+  const fillY = bottom - (bottom - top) * (pct / 100);
+  document.getElementById('honey-group').style.transform = `translateY(${fillY}px)`;
 
   document.getElementById('jar-pct').textContent = pct + '%';
   document.getElementById('jar-fraction').textContent =
